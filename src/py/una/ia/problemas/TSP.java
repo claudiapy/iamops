@@ -24,7 +24,7 @@ import py.una.ia.util.Solucion;
  * 
  * @author Maximiliano Báez <mxbg.py@gmail.com>
  */
-public class TSP {
+public class TSP implements Problema{
     private int ciudades;
     private Double[][] distancia;
     private Double[][] tiempo;
@@ -45,6 +45,13 @@ public class TSP {
      */
     public int getCiudades(){
         return ciudades;
+    }
+    /**
+     * Este método retorna el tamaño del problema
+     * @return el tamaño del problema.
+     */
+    public int getSize() {
+        return getCiudades();
     }
     /**
      * Este método establece la matriz de adyacencia para el objetivo de
@@ -113,4 +120,25 @@ public class TSP {
         //se establecen las evaluaciones para la solucion acorde a los objetivos
         solucion.setEvaluacion(new Double[]{localTime, localLen});
     }
+    /**
+     * Este metodo retorna el valor para el primer objetivo definido.
+     *
+     * @param origen indice que indica una posición en el objetivo.
+     * @param destino indice que indica una posición en el objetivo.
+     * @return el valor del objetivo en la posicon [origen, destino]
+     */
+    public Double getFirstValueAt(int origen, int destino) {
+        return distancia[origen][destino];
+    }
+    /**
+     * Este metodo retorna el valor para el segundo objetivo definido.
+     *
+     * @param origen indice que indica una posición en el objetivo.
+     * @param destino indice que indica una posición en el objetivo.
+     * @return el valor del objetivo en la posicon [origen, destino]
+     */
+    public Double getSecondValueAt(int origen, int destino) {
+        return tiempo[origen][destino];
+    }
+
 }

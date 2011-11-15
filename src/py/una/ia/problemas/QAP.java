@@ -22,7 +22,7 @@ import py.una.ia.util.Solucion;
  *
  * @author Maximiliano Báez <mxbg.py@gmail.com>
  */
-public class QAP {
+public class QAP implements Problema{
 
     private int localidades;
     private Double[][] distancia;
@@ -50,7 +50,13 @@ public class QAP {
     public int getLocalidades() {
         return localidades;
     }
-
+    /**
+     * Este método 
+     * @return
+     */
+    public int getSize(){
+        return getLocalidades();
+    }
     /**
      * Este método establece la matriz de adyacencia para establecer las
      * distancias entre las localidades.
@@ -131,12 +137,6 @@ public class QAP {
             int localCity = path[i];
             int nextCity = path[i + 1];
 
-            if (i < localidades - 1) {
-                //si es la ultima ciudad se debe conservar el como la siguiente
-                //ciudad la ciudad de origen, esto es devido a la definicion del
-                //problema en si.
-                nextCity = path[i + 1];
-            }
             //se obtienen los flujos entre las ciudades
             ida = flujoIda[localCity][nextCity];
             vuelta = flujoVuelta[localCity][nextCity];
@@ -149,4 +149,25 @@ public class QAP {
         //se establecen las evaluaciones para la solucion acorde a los objetivos
         solucion.setEvaluacion(new Double[]{valueIda, valueVuelta});
     }
+    /**
+     * Este metodo retorna el valor para el primer objetivo definido.
+     *
+     * @param origen indice que indica una posición en el objetivo.
+     * @param destino indice que indica una posición en el objetivo.
+     * @return el valor del objetivo en la posicon [origen, destino]
+     */
+    public Double getFirstValueAt(int origen, int destino) {
+        return flujoIda[origen][destino];
+    }
+    /**
+     * Este metodo retorna el valor para el segundo objetivo definido.
+     * 
+     * @param origen indice que indica una posición en el objetivo.
+     * @param destino indice que indica una posición en el objetivo.
+     * @return el valor del objetivo en la posicon [origen, destino]
+     */
+    public Double getSecondValueAt(int origen, int destino) {
+        return flujoVuelta[origen][destino];
+    }
+    
 }

@@ -17,6 +17,7 @@
 
 package py.una.ia;
 
+import py.una.ia.moaco.MOACSQAP;
 import py.una.ia.problemas.QAP;
 import py.una.ia.problemas.TSP;
 import py.una.ia.util.FileManager;
@@ -33,11 +34,26 @@ public class Main {
        QAP qap = new QAP();
        file.parse(qap);
        System.out.println(qap.getFlujoVuelta()[qap.getLocalidades()-1].length);
-       name = "instancias/kroac100.tsp.txt";
+
+       //Main.print(qap.getDistancia());
+
+       MOACSQAP moacs = new MOACSQAP(qap);
+       moacs.start();
+       System.out.println("end..");
+       /*name = "instancias/kroac100.tsp.txt";
        file = new FileManager(name);
        TSP tsp = new TSP();
        file.parse(tsp);
-       System.out.println(tsp.getTiempo()[tsp.getCiudades()-1].length);
+       System.out.println(tsp.getTiempo()[tsp.getCiudades()-1].length);*/
 
+    }
+
+    public static void print(Object [][] matriz){
+        for(int i=0;i<matriz.length;i++){
+            for(int j=0;j<matriz.length;j++){
+                System.out.print(matriz[i][j] + "\t");
+            }
+            System.out.println();
+        }
     }
 }

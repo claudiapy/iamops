@@ -66,4 +66,23 @@ public class ConjuntoPareto {
         return true;
 
     }
+    /**
+     * Este metodo determina la cantidad de soluciones que se encuentran el el
+     * conjunto pareto.
+     *
+     * @return el tamaño del conjutno pareto.
+     */
+    public int size(){
+        return soluciones.size();
+    }
+    /**
+     * Este método retorna la solución que se encuentra en la posición index del
+     * conjunto pareto.
+     *
+     * @param index número de solución.
+     * @return solción del conjunto pareto.
+     */
+    public Solucion get(int index){
+        return soluciones.get(index);
+    }
 }

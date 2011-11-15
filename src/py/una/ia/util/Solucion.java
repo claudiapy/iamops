@@ -33,9 +33,20 @@ public class Solucion {
      */
     private Double[] evaluacion;
 
+    public static int EMPTY = -1;
+
     public Solucion(int pathLen, int evaluacionLen) {
         path = new Integer[pathLen];
-        evaluacion = new Double[pathLen];
+        evaluacion = new Double[evaluacionLen];
+    }
+
+    public Solucion(int pathLen) {
+        path = new Integer[pathLen];
+        evaluacion = new Double[2];
+        
+        for (int i=0; i<pathLen; i++){
+            path[i] = EMPTY;
+        }
     }
 
     /**
@@ -100,5 +111,33 @@ public class Solucion {
             }
         }
         return mejor && igual;
+    }
+    /**
+     * Este metodo obtiene el valor del path de la posición index.
+     * 
+     * @param index indice del path de nodos.
+     * @return el valor del nodo ubicado en la posición index.
+     */
+    public Integer get(int index){
+        return path[index];
+    }
+    /**
+     * Este metodo establece el valor del path de la posición index.
+     *
+     * @param index indice del path de nodos.
+     * @param value el valor a esablecer al nodo en la posición index.
+     */
+    public void set(int index, int value){
+       path[index] = value;
+    }
+    /**
+     * Este método devuelve la evaluación del objetivo en número index de la
+     * solucion actual.
+     *
+     * @param index indice del objetivo del cual se desea obtener el valor.
+     * @return el valor del objetivo número index.
+     */
+    public Double getEvaluacionValueAt(int index){
+        return evaluacion[index];
     }
 }

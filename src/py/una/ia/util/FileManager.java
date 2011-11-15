@@ -81,6 +81,7 @@ public class FileManager {
         while (tokens.hasMoreTokens()) {
             //se transforma cada elemento como a un double
             column[i] = Double.parseDouble(tokens.nextToken());
+            i++;
         }
         //se retorna la columna
         return column;
