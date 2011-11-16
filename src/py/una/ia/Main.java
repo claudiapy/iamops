@@ -17,31 +17,49 @@
 package py.una.ia;
 
 import py.una.ia.moaco.MOACS;
+import py.una.ia.moaco.MOACO;
 
 import py.una.ia.problemas.QAP;
 import py.una.ia.problemas.TSP;
 import py.una.ia.util.FileManager;
 
 /**
- * 
+ *
  * @author Maximiliano Báez <mxbg.py@gmail.com>
  */
 public class Main {
 
     public static void main(String args[]) {
         String name = "instancias/qapUni.75.0.1.qap.txt";
-        name = "instancias/kroac100.tsp.txt";
-        QAP qap = new QAP();
-        TSP tsp = new TSP();
-        
+        String problema = "";
+
+        if(args.length == 4){
+            name = args[0];
+            problema = args[1];
+            MOACO.MAX_ITERACIONES = Integer.parseInt(args[2]);
+            MOACO.cantidadHormigas = Integer.parseInt(args[3]);
+
+        }else{
+            System.err.println("Faltan Argumentos " + args.length);
+            for (String s : args){
+                System.err.println(s);
+            }
+            return;
+        }
         FileManager file = new FileManager(name);
         file = new FileManager(name);
-        //file.parse(qap);
-        file.parse(tsp);
-        
-        MOACS moacs = new MOACS(tsp);
+        QAP qap = new QAP();
+        TSP tsp = new TSP();
+        MOACS moacs;
+        if(problema == "QAP"){
+            file.parse(qap);
+            moacs = new MOACS(qap);
+        }else{
+            file.parse(tsp);
+            moacs = new MOACS(tsp);
+        }
         moacs.start();
-        
+        //System.out.println("End..");
         System.out.println(moacs.getConjuntoPareto());
     }
 

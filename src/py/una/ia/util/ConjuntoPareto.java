@@ -24,12 +24,14 @@ import java.util.List;
  * @author Maximiliano Báez <mxbg.py@gmail.com>
  */
 public class ConjuntoPareto {
+
     /**
      * lista de soluciones no dominadas pertenecientes al conjunto pareto
      */
     private List<Solucion> soluciones;
+    public static final int MAX = 100;
 
-    public ConjuntoPareto(){
+    public ConjuntoPareto() {
         soluciones = new ArrayList<Solucion>();
     }
 
@@ -41,27 +43,27 @@ public class ConjuntoPareto {
      * @param solucion solucion que se trata de añadir al conjunto pareto
      * @return true si se pudo añadir la solucion, en caso contrario false
      */
-    public boolean add(Solucion solucion){
+    public boolean add(Solucion solucion) {
         //lista de soluciones dominadas a ser eliminadas del conjunto
         List<Integer> toRemove = new ArrayList<Integer>();
-        
-        for(int i=0; i<soluciones.size(); i++){
 
-            if (solucion.domina(soluciones.get(i))){
+        for (int i = 0; i < soluciones.size(); i++) {
+
+            if (solucion.domina(soluciones.get(i))) {
                 //si la solucion actual es dominada, se añade al conjunto de
                 //solucones a eliminar
-                toRemove.add(i);    
-            }else if(soluciones.get(i).domina(solucion)){
+                toRemove.add(i);
+            } else if (soluciones.get(i).domina(solucion)) {
                 //si la solucion actual es dominante retorna false
-                
+
                 return false;
             }
 
         }
-        
+
 
         //Se eliniman todas las soluciones no dominadas del conjunto pareto
-        for(Integer index :  toRemove){
+        for (Integer index : toRemove) {
             soluciones.remove(index);
         }
         //se añade la solucion al conjunto pareto
@@ -69,15 +71,29 @@ public class ConjuntoPareto {
         return true;
 
     }
+
+    public void reduce() {
+        for (int i = 0; i < soluciones.size(); i++) {
+            for (int j = i + 1; j < soluciones.size(); j++) {
+                if (soluciones.get(i).equals(soluciones.get(j))) {
+
+                    soluciones.remove(j);
+                }
+
+            }
+        }
+    }
+
     /**
      * Este metodo determina la cantidad de soluciones que se encuentran el el
      * conjunto pareto.
      *
      * @return el tamaño del conjutno pareto.
      */
-    public int size(){
+    public int size() {
         return soluciones.size();
     }
+
     /**
      * Este método retorna la solución que se encuentra en la posición index del
      * conjunto pareto.
@@ -85,15 +101,16 @@ public class ConjuntoPareto {
      * @param index número de solución.
      * @return solción del conjunto pareto.
      */
-    public Solucion get(int index){
+    public Solucion get(int index) {
         return soluciones.get(index);
     }
-    
-       public String toString(){
-        String str="";
-        for (Solucion p : soluciones){
-            
-            str+= p + "\n";
+
+    @Override
+    public String toString() {
+        String str = "";
+        for (Solucion p : soluciones) {
+
+            str += p + "\n";
         }
         return str;
     }

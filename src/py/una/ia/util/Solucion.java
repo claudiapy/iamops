@@ -101,23 +101,40 @@ public class Solucion {
         Double[] testSolu = solucion.getEvaluacion();
         int mejor = 0;
         int igual = 0;
+        int min = 10;
+        int max = 5000;
         for (int i = 0; i < evaluacion.length; i++) {
-            
-            if (evaluacion[i] < testSolu[i]) {
+            if (evaluacion[i] < testSolu[i] ) {
                 mejor++;
-            } else if (evaluacion[i] == testSolu[i]) {
-                igual ++;
-            } else if (evaluacion[i] > testSolu[i]) {
+            
+            } else if (evaluacion[i] > testSolu[i] ) {
                 return false;
             }
+            
+            /*if ((testSolu[i] - evaluacion[i] ) > max ) {
+                mejor++;
+            } else if ((testSolu[i] - evaluacion[i]) <= max  &&
+                    (testSolu[i] - evaluacion[i]) > min) {
+            //else if(evaluacion[i] == testSolu[i])   {
+                igual ++;
+            } else if (evaluacion[i] > (testSolu[i]) ) {
+                return false;
+            }*/
         }
-//        System.out.println("================================");
-//        System.out.println("Domina = " + (mejor && igual) );
-//        System.out.println(evaluacion[0] + " ? " +testSolu[0]);
-//        System.out.println(evaluacion[1] + " ? " +testSolu[1]);
-//        System.out.println();
-
-        return !(igual== evaluacion.length) && ((igual+mejor)== evaluacion.length);
+        
+        
+        return !equals(solucion) && (mejor>0);
+    }
+    /**
+     * Este método verifica si 2 soluciones son iguales, para ello compara la 
+     * parte entera de las soluciones, para evitar que soluciones lijeramente.
+     * 
+     * @param solucion solución a se comparada.
+     * @return true si son iguales, en caso contrario false.
+     */
+    public boolean equals(Solucion solucion){
+        return evaluacion[0].intValue() == solucion.evaluacion[0].intValue() &&
+               evaluacion[1].intValue() == solucion.evaluacion[1].intValue();
     }
     /**
      * Este metodo obtiene el valor del path de la posición index.
@@ -158,11 +175,23 @@ public class Solucion {
         
         
     }
+    /**
+     * 
+     * @return 
+     */
+    public int size(){
+        for(int i=0;i< path.length; i++){
+            if(path[i] == EMPTY){
+                return i;
+            }
+        }
+        return path.length;
+    }
     public String toString(){
         String str = evaluacion[0]+"\t"+ evaluacion[1] ;//+" {";
         /*for (int n : path){
             str+= n +", ";
         }*/
-        return str; //+"}";
+        return str.replace(".", ","); //+"}";
     }
 }

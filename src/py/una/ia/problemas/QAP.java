@@ -169,5 +169,6 @@ public class QAP implements Problema{
     public Double getSecondValueAt(int origen, int destino) {
         return flujoVuelta[origen][destino];
     }
+
     
 }

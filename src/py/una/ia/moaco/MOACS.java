@@ -18,6 +18,8 @@ package py.una.ia.moaco;
 
 import java.util.ArrayList;
 import py.una.ia.problemas.Problema;
+import py.una.ia.problemas.QAP;
+import py.una.ia.problemas.TSP;
 import py.una.ia.util.ConjuntoPareto;
 import py.una.ia.util.Random;
 import py.una.ia.util.Solucion;
@@ -45,35 +47,36 @@ public class MOACS extends MOACO {
      */
     private double taoInicial;
     /**
-     * criterio = 1
-    tiempoTotal = 10
-    maxIteraciones = (10;
-    this.cantidadHormigas = 10;
-    this.alfa = 1;
-    this.beta = 2;
-    this.rho = 0.1;
-    this.taoInicial = 1;
-    this.q0 = 0.5;
-    this.F1MAX = 150000;
-    this.F2MAX = 150000;
-    this.NORM1 = 3000;
-    this.NORM2 = 3000;
+     * Tabla de feromonas
      */
     protected TablaFeromonas tabla;
+    /**
+     * Valor de Tao
+     */
     protected double tao;
+    /**
+     *
+     */
     protected double q0;
-    protected double F1MAX; // utilizados para normalizacion
-    protected double F2MAX;
-    protected int hormigaActual; // utilizado para calcular los pesos lambda
+    /**
+     * Horiga que esta siendo actualmente procesada, utilizado para calcular 
+     * los pesos lambda
+     */
+    protected int hormigaActual;
 
+    /**
+     * Constructor de la calse moacs.
+     * 
+     * @param problema instancia del problema a resolver.
+     * @see {@link TSP}
+     * @see {@link QAP}
+     */
     public MOACS(Problema problema) {
         this.alfa = 1;
-        this.beta = 2;
-        this.rho = 0.1;
-        this.taoInicial = 1.0;
+        this.beta = 3.333;
+        this.rho = 0.333;
+        this.taoInicial = 0.1;
         this.q0 = 0.5;
-        this.F1MAX = 150000;
-        this.F2MAX = 150000;
         this.pareto = new ConjuntoPareto();
 
         tabla = new TablaFeromonas(problema.getSize());
@@ -82,10 +85,12 @@ public class MOACS extends MOACO {
         tabla.reset(taoInicial);
     }
 
+    /**
+     * Este método arranca el algoritmo.
+     */
     public void start() {
         int generacion = 0;
         int estOrigen;
-        double deltaTao;
         double taoPrima;
         Solucion[] sols = new Solucion[cantidadHormigas];
         for (int i = 0; i < cantidadHormigas; i++) {
@@ -98,16 +103,16 @@ public class MOACS extends MOACO {
             for (int i = 0; i < cantidadHormigas; i++) {
                 estOrigen = Random.rand() % (problema.getSize());
                 hormigaActual = i + 1;
-
-                construirSolucion(estOrigen, 1, sols[i]);
-
-                pareto.add(sols[i]);
-
-                //else
+                construirSolucion(estOrigen, sols[i]);
+            }
+            for (int i = 0; i < cantidadHormigas; i++) {
+                if (pareto.add(sols[i])) {
+                    pareto.reduce();
+                }
                 sols[i] = new Solucion(problema.getSize());
             }
 
-            taoPrima = calcularTaoPrima(calcularAverage(1), calcularAverage(2));
+            taoPrima = calcularTaoPrima(calcularAverage());
 
             if (taoPrima > tao) {
                 // reiniciar tabla de feromonas
@@ -116,8 +121,7 @@ public class MOACS extends MOACO {
             } else {
                 // actualizan la tabla las soluciones del frente Pareto
                 for (int i = 0; i < pareto.size(); i++) {
-                    deltaTao = calcularDeltaTao(pareto.get(i));
-                    actualizarFeromonas(pareto.get(i), deltaTao);
+                    actualizarFeromonas(pareto.get(i));
                 }
 
             }
@@ -125,20 +129,25 @@ public class MOACS extends MOACO {
         }
     }
 
-    public void construirSolucion(int estOrigen, int onlineUpdate, Solucion solucion) {
+    /**
+     * Este método se encarga de construir las soluciones, a partir del estado
+     * origen.
+     * @param estOrigen estado inicial
+     * @param solucion varible en donde se almacenará la solución construida.
+     */
+    public void construirSolucion(int estOrigen, Solucion solucion) {
         int estVisitados = 0;
         int sgteEstado;
         int estActual = estOrigen;
 
         solucion.set(estVisitados, estOrigen);
         estVisitados++;
+
         while (estVisitados < problema.getSize()) {
 
             sgteEstado = selectNextNode(estActual, solucion);
 
-            if (onlineUpdate != 0) {
-                onlineUpdate(estActual, sgteEstado);
-            }
+            onlineUpdate(estActual, sgteEstado);
             estActual = sgteEstado;
             solucion.set(estVisitados, sgteEstado);
             estVisitados++;
@@ -255,6 +264,7 @@ public class MOACS extends MOACO {
     /**
      * Este método se encaraga de evaluar la expresión definida de la siguente
      * forma :
+     * <p>
      *      tau[i,j]*(n0[i,j]^lambda*B)*(n1[i,j]^(1-lambda)*B)
      * 
      * @param origen indice inicial de la tabla
@@ -280,8 +290,10 @@ public class MOACS extends MOACO {
 
     /**
      * Este metodo se encarga de calcular el valor de lambda definido por:
-     * (t - 1)/(m - 1), donde t es indice de la hormiga actual y m la cantidad
-     * total de hormigas.
+     * <p>
+     * lambda = (t - 1)/(m - 1)
+     * <p>
+     * Donde t es indice de la hormiga actual y m la cantidad total de hormigas.
      *
      * @return el valor de lambda calculado.
      */
@@ -290,46 +302,74 @@ public class MOACS extends MOACO {
     }
 
     /**
+     * Este método se encarga de actualizar las feromonas, teniendo en cuenta
+     * la siguiente formula:
+     * <p>
+     * T(i,j) = (1 - rho) . T(i,j) + rho / F1*F2
      * 
-     * @param solucion
-     * @param deltaTau
+     * @param solucion solución con la cual se actualiza las feromonas.
      */
-    protected void actualizarFeromonas(Solucion solucion, double deltaTau) {
-
+    protected void actualizarFeromonas(Solucion solucion) {
+        double value = 0.0;
+        double[] avg = calcularAverage();
         for (int i = 0; i < solucion.getPath().length - 1; i++) {
             int j = solucion.get(i);
             int k = solucion.get(i + 1);
-            tabla.setValueAt(j, k, tabla.getValueAt(j, k) + deltaTau);
+            value = (1 - rho) * tabla.getValueAt(j, k) + rho / (avg[0] * avg[1]);
+            tabla.setValueAt(j, k, value);
         }
     }
 
-    protected double calcularDeltaTao(Solucion sol) {
-        double delta;
+    /**
+     * Este método se calcula el valor para To' (deltaTao) de la siguiente forma:
+     * <p>
+     * To' = 1 / sqrt ( n . F1avg . F2avg ). 
+     * <p>
+     * Donde  n es el nro de nodos (para el TSP es constante y no influye en 
+     * esta fórmula). Es decir son un indicador de la calidad del Conjunto 
+     * Pareto en ese momento.
+     * 
+     * @param avr es un array que contiene los valores de F1avg , F2avg y n.
+     * @return el valor de To' teniendo en cuenta el Conjunto Pareto.
+     * @see #calcularAverage() 
+     */
+    private double calcularTaoPrima(double[] avr) {
 
-        delta = 1.0 / ((sol.getEvaluacionValueAt(0)) / F1MAX + sol.getEvaluacionValueAt(1) / F2MAX); //normalizados
-        return delta;
+        return (1.0 / Math.sqrt(avr[0] * avr[1] * avr[2]) * 1.0);
     }
 
-    protected double calcularTaoPrima(double avr1, double avr2) {
-        return (1.0 / (avr1 * avr2));
-    }
-
+    /**
+     * Este método se encarga de actualizar las feromonas. Metodo de actualización
+     * paso a paso, teniendo en cuenta :
+     * la siguiente formula:
+     * <p>
+     * T(i,j) = (1 - rho)* T(i,j) + rho* To.
+     * @param origen
+     * @param destino 
+     */
     public void onlineUpdate(int origen, int destino) {
         double tau;
         tau = (1 - rho) * tabla.getValueAt(origen, destino) + rho * taoInicial;
         tabla.setValueAt(origen, destino, tau);
     }
 
-    protected double calcularAverage(int obj) {
-        double avr = 0;
-        for (int i = 0; i < pareto.size(); i++) {
-            if (obj == 1) {
-                avr += (pareto.get(i).getEvaluacionValueAt(0));
-            } else {
-                avr += pareto.get(i).getEvaluacionValueAt(1);
-            }
-        }
+    /**
+     * Este método calula los promedios de las evaluaciones de la 1ra (F1) y 
+     * 2da (F2) funciones objetivos teniendo en cuenta solo las soluciones que 
+     * pertenecen en ese momento al Conjunto Pareto.
+     * 
+     * @return un array que contiene los valores de F1avg , F2avg y navg
+     */
+    private double[] calcularAverage() {
 
-        return (avr / (double) pareto.size());
+        double avr1 = 0.0, avr2 = 0.0, avr3 = 0.0;
+
+        for (int i = 0; i < pareto.size(); i++) {
+            avr1 += (pareto.get(i).getEvaluacionValueAt(0));
+            avr2 += pareto.get(i).getEvaluacionValueAt(1);
+            avr3 += pareto.get(i).size();
+        }
+        double size = pareto.size() * 1.0;
+        return new double[]{avr1 / size, avr2 / size, avr3 / size};
     }
 }
