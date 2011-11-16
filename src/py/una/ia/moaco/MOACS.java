@@ -17,6 +17,7 @@
 package py.una.ia.moaco;
 
 import java.util.ArrayList;
+import py.una.ia.problemas.Problema;
 import py.una.ia.util.ConjuntoPareto;
 import py.una.ia.util.Random;
 import py.una.ia.util.Solucion;
@@ -25,7 +26,7 @@ import py.una.ia.util.Solucion;
  * 
  * @author Maximiliano Báez <mxbg.py@gmail.com>
  */
-public abstract class MOACS extends MOACO {
+public class MOACS extends MOACO {
 
     /**
      * Peso para las feromonas.
@@ -63,14 +64,90 @@ public abstract class MOACS extends MOACO {
     protected double q0;
     protected double F1MAX; // utilizados para normalizacion
     protected double F2MAX;
-    
     protected int hormigaActual; // utilizado para calcular los pesos lambda
-    private int noLambdas;
 
-    public abstract void start();
+    public MOACS(Problema problema) {
+        this.alfa = 1;
+        this.beta = 2;
+        this.rho = 0.1;
+        this.taoInicial = 1.0;
+        this.q0 = 0.5;
+        this.F1MAX = 150000;
+        this.F2MAX = 150000;
+        this.pareto = new ConjuntoPareto();
 
-    public abstract void construirSolucion(int estOrigen, int onlineUpdate,
-            Solucion solucion);
+        tabla = new TablaFeromonas(problema.getSize());
+        this.problema = problema;
+
+        tabla.reset(taoInicial);
+    }
+
+    public void start() {
+        int generacion = 0;
+        int estOrigen;
+        double deltaTao;
+        double taoPrima;
+        Solucion[] sols = new Solucion[cantidadHormigas];
+        for (int i = 0; i < cantidadHormigas; i++) {
+            sols[i] = new Solucion(problema.getSize());
+        }
+
+        tao = -1;
+        while (!condicionParada(generacion)) {
+            generacion++;
+            for (int i = 0; i < cantidadHormigas; i++) {
+                estOrigen = Random.rand() % (problema.getSize());
+                hormigaActual = i + 1;
+
+                construirSolucion(estOrigen, 1, sols[i]);
+
+                pareto.add(sols[i]);
+
+                //else
+                sols[i] = new Solucion(problema.getSize());
+            }
+
+            taoPrima = calcularTaoPrima(calcularAverage(1), calcularAverage(2));
+
+            if (taoPrima > tao) {
+                // reiniciar tabla de feromonas
+                tao = taoPrima;
+                tabla.reset(tao);
+            } else {
+                // actualizan la tabla las soluciones del frente Pareto
+                for (int i = 0; i < pareto.size(); i++) {
+                    deltaTao = calcularDeltaTao(pareto.get(i));
+                    actualizarFeromonas(pareto.get(i), deltaTao);
+                }
+
+            }
+
+        }
+    }
+
+    public void construirSolucion(int estOrigen, int onlineUpdate, Solucion solucion) {
+        int estVisitados = 0;
+        int sgteEstado;
+        int estActual = estOrigen;
+
+        solucion.set(estVisitados, estOrigen);
+        estVisitados++;
+        while (estVisitados < problema.getSize()) {
+
+            sgteEstado = selectNextNode(estActual, solucion);
+
+            if (onlineUpdate != 0) {
+                onlineUpdate(estActual, sgteEstado);
+            }
+            estActual = sgteEstado;
+            solucion.set(estVisitados, sgteEstado);
+            estVisitados++;
+
+        }
+        problema.evaluar(solucion);
+
+    }
+
     /**
      * Este método se encarga de retornar el siguiente nodo a visitar, apartir
      * de nodo origen.
@@ -81,13 +158,18 @@ public abstract class MOACS extends MOACO {
      */
     public int selectNextNode(int origen, Solucion solucion) {
         int sgteEstado;
-        System.out.println("SRC " + solucion.getPath()[60]);
-        problema.evaluar(solucion);
+        //problema.evaluar(solucion);
         Boolean[] visitados = new Boolean[problema.getSize()];
         double q;
         // marcar estados ya visitados, hallar el vecindario
         for (int i = 0; solucion.get(i) != Solucion.EMPTY; i++) {
+
             visitados[solucion.get(i)] = true;
+        }
+        for (int i = 0; i < visitados.length; i++) {
+            if (visitados[i] == null) {
+                visitados[i] = false;
+            }
         }
         q = Random.rand() / (double) Random.RAND_MAX;
         if (q <= q0) {
@@ -98,6 +180,7 @@ public abstract class MOACS extends MOACO {
 
         return sgteEstado;
     }
+
     /**
      *
      * @param origen
@@ -112,6 +195,7 @@ public abstract class MOACS extends MOACO {
         lambda = calcularLambda();
         for (int i = 0; i < problema.getSize(); i++) {
             //nodo no visitado
+            //System.out.print( "Visitados "+ visitados[i]);
             if (!visitados[i]) {
                 valorActual = evaluarFormula(origen, i, lambda);
                 //si el valor actual es el maximo
@@ -125,6 +209,7 @@ public abstract class MOACS extends MOACO {
         }
         return sgteEstado;
     }
+
     /**
      * 
      * @param origen
@@ -141,6 +226,7 @@ public abstract class MOACS extends MOACO {
         double lambda = calcularLambda();
         // hallar la suma y los productos
         for (int i = 0; i < problema.getSize(); i++) {
+            //System.out.print( "Visitados "+ visitados[i]);
             if (!visitados[i]) {
                 //se evalua las posibles soluciones
                 eval = evaluarFormula(origen, i, lambda);
@@ -165,6 +251,7 @@ public abstract class MOACS extends MOACO {
 
         return next;
     }
+
     /**
      * Este método se encaraga de evaluar la expresión definida de la siguente
      * forma :
@@ -183,12 +270,14 @@ public abstract class MOACS extends MOACO {
         firstVisibilidad = 1 / problema.getFirstValueAt(origen, destino);
         secondVisibilidad = 1 / problema.getSecondValueAt(origen, destino);
         //se calcula el volor actual
+
         valorActual = tabla.getValueAt(origen, destino)
                 * Math.pow(firstVisibilidad, lambda * beta)
                 * Math.pow(secondVisibilidad, (1 - lambda) * beta);
 
         return valorActual;
     }
+
     /**
      * Este metodo se encarga de calcular el valor de lambda definido por:
      * (t - 1)/(m - 1), donde t es indice de la hormiga actual y m la cantidad
@@ -199,6 +288,7 @@ public abstract class MOACS extends MOACO {
     private Double calcularLambda() {
         return (hormigaActual - 1) / (cantidadHormigas - 1) * 1.0;
     }
+
     /**
      * 
      * @param solucion
@@ -213,24 +303,24 @@ public abstract class MOACS extends MOACO {
         }
     }
 
-    /*================================ */
-  
- 
-    protected double calcular_delta_tao(Solucion sol) {
+    protected double calcularDeltaTao(Solucion sol) {
         double delta;
 
         delta = 1.0 / ((sol.getEvaluacionValueAt(0)) / F1MAX + sol.getEvaluacionValueAt(1) / F2MAX); //normalizados
         return delta;
     }
-    protected double calcular_tao_prima(double avr1, double avr2) {
+
+    protected double calcularTaoPrima(double avr1, double avr2) {
         return (1.0 / (avr1 * avr2));
     }
-    public void online_update(int origen, int destino) {
+
+    public void onlineUpdate(int origen, int destino) {
         double tau;
         tau = (1 - rho) * tabla.getValueAt(origen, destino) + rho * taoInicial;
         tabla.setValueAt(origen, destino, tau);
     }
-      protected double calcular_average(int obj) {
+
+    protected double calcularAverage(int obj) {
         double avr = 0;
         for (int i = 0; i < pareto.size(); i++) {
             if (obj == 1) {
@@ -242,7 +332,4 @@ public abstract class MOACS extends MOACO {
 
         return (avr / (double) pareto.size());
     }
-
-
-   
 }

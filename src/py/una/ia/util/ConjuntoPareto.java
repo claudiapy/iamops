@@ -53,10 +53,13 @@ public class ConjuntoPareto {
                 toRemove.add(i);    
             }else if(soluciones.get(i).domina(solucion)){
                 //si la solucion actual es dominante retorna false
+                
                 return false;
             }
 
         }
+        
+
         //Se eliniman todas las soluciones no dominadas del conjunto pareto
         for(Integer index :  toRemove){
             soluciones.remove(index);
@@ -84,5 +87,14 @@ public class ConjuntoPareto {
      */
     public Solucion get(int index){
         return soluciones.get(index);
+    }
+    
+       public String toString(){
+        String str="";
+        for (Solucion p : soluciones){
+            
+            str+= p + "\n";
+        }
+        return str;
     }
 }

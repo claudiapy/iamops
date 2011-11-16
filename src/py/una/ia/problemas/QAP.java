@@ -133,18 +133,18 @@ public class QAP implements Problema{
         //se obtine el conjuto de nodos visitados
         Integer[] path = solucion.getPath();
 
-        for (int i = 0; i < localidades - 1; i++) {
+        for (int i = 0; i < localidades - 1 && path[i]!=-1 && path[i+1]!=-1; i++) {
             int localCity = path[i];
             int nextCity = path[i + 1];
 
             //se obtienen los flujos entre las ciudades
             ida = flujoIda[localCity][nextCity];
-            vuelta = flujoVuelta[localCity][nextCity];
+            vuelta = flujoVuelta[localCity][nextCity]; 
             //se obtiene la distancia entre las ciudades
             len = distancia[localCity][nextCity];
             //Se evalua la solución par ambos objetivos
             valueIda += ida * len;
-            valueIda += vuelta * len;
+            valueVuelta += vuelta * len;
         }
         //se establecen las evaluaciones para la solucion acorde a los objetivos
         solucion.setEvaluacion(new Double[]{valueIda, valueVuelta});

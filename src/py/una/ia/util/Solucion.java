@@ -99,18 +99,25 @@ public class Solucion {
      */
     public boolean domina(Solucion solucion) {
         Double[] testSolu = solucion.getEvaluacion();
-        boolean mejor = false;
-        boolean igual = false;
+        int mejor = 0;
+        int igual = 0;
         for (int i = 0; i < evaluacion.length; i++) {
+            
             if (evaluacion[i] < testSolu[i]) {
-                mejor = true;
+                mejor++;
             } else if (evaluacion[i] == testSolu[i]) {
-                igual = true;
+                igual ++;
             } else if (evaluacion[i] > testSolu[i]) {
                 return false;
             }
         }
-        return mejor && igual;
+//        System.out.println("================================");
+//        System.out.println("Domina = " + (mejor && igual) );
+//        System.out.println(evaluacion[0] + " ? " +testSolu[0]);
+//        System.out.println(evaluacion[1] + " ? " +testSolu[1]);
+//        System.out.println();
+
+        return !(igual== evaluacion.length) && ((igual+mejor)== evaluacion.length);
     }
     /**
      * Este metodo obtiene el valor del path de la posición index.
@@ -139,5 +146,23 @@ public class Solucion {
      */
     public Double getEvaluacionValueAt(int index){
         return evaluacion[index];
+    }
+    
+    @Override
+    public Solucion clone(){
+        Solucion solucion= new Solucion(path.length);
+        solucion.setEvaluacion(evaluacion);
+        solucion.setPath(path);
+        return solucion;
+        
+        
+        
+    }
+    public String toString(){
+        String str = evaluacion[0]+"\t"+ evaluacion[1] ;//+" {";
+        /*for (int n : path){
+            str+= n +", ";
+        }*/
+        return str; //+"}";
     }
 }

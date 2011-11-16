@@ -28,7 +28,7 @@ public class MOACO {
     /**
      * Este atributo define el número máximo de iteraciones para el algoritmo.
      */
-    public static int MAX_ITERACIONES;
+    public static int MAX_ITERACIONES = 100;
     /**
      * Este atributo representa el problema a solucionar.
      */
@@ -53,6 +53,12 @@ public class MOACO {
         return iteracion > MAX_ITERACIONES;
             
     }
+     
+    public ConjuntoPareto getConjuntoPareto(){
+        return pareto;
+    }
+    
+ 
 
 
 }

@@ -14,10 +14,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  */
-
 package py.una.ia;
 
-import py.una.ia.moaco.MOACSQAP;
+import py.una.ia.moaco.MOACS;
+
 import py.una.ia.problemas.QAP;
 import py.una.ia.problemas.TSP;
 import py.una.ia.util.FileManager;
@@ -29,28 +29,25 @@ import py.una.ia.util.FileManager;
 public class Main {
 
     public static void main(String args[]) {
-       String name = "instancias/qapUni.75.0.1.qap.txt";
-       FileManager file = new FileManager(name);
-       QAP qap = new QAP();
-       file.parse(qap);
-       System.out.println(qap.getFlujoVuelta()[qap.getLocalidades()-1].length);
-
-       //Main.print(qap.getDistancia());
-
-       MOACSQAP moacs = new MOACSQAP(qap);
-       moacs.start();
-       System.out.println("end..");
-       /*name = "instancias/kroac100.tsp.txt";
-       file = new FileManager(name);
-       TSP tsp = new TSP();
-       file.parse(tsp);
-       System.out.println(tsp.getTiempo()[tsp.getCiudades()-1].length);*/
-
+        String name = "instancias/qapUni.75.0.1.qap.txt";
+        name = "instancias/kroac100.tsp.txt";
+        QAP qap = new QAP();
+        TSP tsp = new TSP();
+        
+        FileManager file = new FileManager(name);
+        file = new FileManager(name);
+        //file.parse(qap);
+        file.parse(tsp);
+        
+        MOACS moacs = new MOACS(tsp);
+        moacs.start();
+        
+        System.out.println(moacs.getConjuntoPareto());
     }
 
-    public static void print(Object [][] matriz){
-        for(int i=0;i<matriz.length;i++){
-            for(int j=0;j<matriz.length;j++){
+    public static void print(Object[][] matriz) {
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz.length; j++) {
                 System.out.print(matriz[i][j] + "\t");
             }
             System.out.println();
