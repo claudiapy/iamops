@@ -30,12 +30,11 @@ import py.una.ia.util.FileManager;
 public class Main {
 
     public static void main(String args[]) {
-        String name = "instancias/qapUni.75.0.1.qap.txt";
+        String name = "";
         String problema = "";
-
         if(args.length == 4){
             name = args[0];
-            problema = args[1];
+            problema = args[1].trim();
             MOACO.MAX_ITERACIONES = Integer.parseInt(args[2]);
             MOACO.cantidadHormigas = Integer.parseInt(args[3]);
 
@@ -46,20 +45,20 @@ public class Main {
             }
             return;
         }
+
         FileManager file = new FileManager(name);
         file = new FileManager(name);
         QAP qap = new QAP();
         TSP tsp = new TSP();
-        MOACS moacs;
-        if(problema == "QAP"){
+        MOACS moacs = null;
+        if(problema.equals("QAP")){
             file.parse(qap);
             moacs = new MOACS(qap);
-        }else{
+        }else if (problema.equals("TSP")){
             file.parse(tsp);
             moacs = new MOACS(tsp);
         }
         moacs.start();
-        //System.out.println("End..");
         System.out.println(moacs.getConjuntoPareto());
     }
 
